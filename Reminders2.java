@@ -1,4 +1,4 @@
-/*
+ /*
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
@@ -37,7 +37,7 @@ public class Reminders2 extends JFrame implements ActionListener, TableModelList
     private JButton[] daysButtons;
     private JTabbedPane jtpMonths;
     private JPanel[] monthsPanels;
-    private JComboBox jcbYears;
+    private JComboBox jcbYears, jcbMonths;
     private String[] monthsStr = {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
     private String[] daysOfWeek = {"Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"};
     private JPanel southPanel;
@@ -97,6 +97,7 @@ public class Reminders2 extends JFrame implements ActionListener, TableModelList
                 jlabGroup.setText("<html><h1>" + (String)gtm.getValueAt(jtabGroups.getSelectedRow(), jtabGroups.getSelectedColumn()) + "</h1></html>");
                 rtm.setGroupIndex(jtabGroups.getSelectedRow());
                 rtm.refresh();
+                
             }
         } else if (tme.getSource().equals(rtm)) {
             if (rdialog != null) {
@@ -114,6 +115,10 @@ public class Reminders2 extends JFrame implements ActionListener, TableModelList
                 jlabGroup.setText("<html><h1>" + (String)gtm.getValueAt(jtabGroups.getSelectedRow(), 0)+ "</h1></html>");
                 rtm.setGroupIndex(jtabGroups.getSelectedRow());
                 rtm.refresh();
+                calendarPanel.removeAll();
+                calendarPanel.add(jcbMonths);
+                calendarPanel.add(monthsPanels[jcbMonths.getSelectedIndex()]);
+                setVisible(true);
             }
         }
     }
@@ -121,13 +126,18 @@ public class Reminders2 extends JFrame implements ActionListener, TableModelList
     public void actionPerformed(ActionEvent ae) {
         if (ae.getSource().equals(jtfSearch)) {
             manager.addRemindersToSearchGroup(manager.findRemindersByName(jtfSearch.getText()));
+            jlabGroup.setText("<html><h1>Search</h1></html>");
             rtm.setDisplaySearch(true);
             rtm.refresh();
+            calendarPanel.removeAll();
+            calendarPanel.add(jcbMonths);
+            calendarPanel.add(monthsPanels[jcbMonths.getSelectedIndex()]);
+            setVisible(true);
         } else if (ae.getSource() instanceof JButton && !ae.getSource().equals(jbtnShowCal)) {
             JButton sourceButton = (JButton)ae.getSource();
             if (sourceButton.getText() != null) {
                 int day = Integer.parseInt(sourceButton.getText());
-                int month = jtpMonths.getSelectedIndex();
+                int month = jcbMonths.getSelectedIndex();
                 int year = Integer.parseInt((String)jcbYears.getSelectedItem());
                 ArrayList <Reminder> selectedReminders = manager.findRemindersByDueDate(year, month, day);
                 manager.addRemindersToSearchGroup(selectedReminders);
@@ -140,6 +150,14 @@ public class Reminders2 extends JFrame implements ActionListener, TableModelList
             cm.setYear(Integer.parseInt((String)jcbYears.getSelectedItem()));
             fillCurrentMonth();
             setVisible(true);
+        } else if (ae.getSource().equals(jcbMonths)) {
+            calendarPanel.removeAll();
+            fillCurrentMonth();
+            calendarPanel.add(jcbMonths);
+            calendarPanel.add(monthsPanels[jcbMonths.getSelectedIndex()]);
+            
+            calendarPanel.repaint();
+            this.setVisible(true);
         } else {
             switch (ae.getActionCommand()) {
                 case "Add Reminder":
@@ -282,6 +300,8 @@ public class Reminders2 extends JFrame implements ActionListener, TableModelList
         calendarPanel = new JPanel();
         calendarPanel.setPreferredSize(new Dimension(160, 200));
         monthsPanels = new JPanel[12];
+        jcbMonths = new JComboBox(monthsStr);
+        jcbMonths.addActionListener(this);
         jtpMonths = new JTabbedPane();
         jtpMonths.setPreferredSize(new Dimension(160, 200));
         jtpMonths.addChangeListener(this);
@@ -290,11 +310,13 @@ public class Reminders2 extends JFrame implements ActionListener, TableModelList
             jtpMonths.addTab(monthsStr[i], monthsPanels[i]);
         }
         jtpMonths.setSelectedIndex(cm.getCurrentMonth());
+        jcbMonths.setSelectedIndex(cm.getCurrentMonth());
         fillCurrentMonth();
-        calendarPanel.add(jtpMonths);
+        calendarPanel.add(jcbMonths);
+        calendarPanel.add(monthsPanels[cm.getCurrentMonth()]);
     }
     public void fillCurrentMonth() {
-        int currentMonth = jtpMonths.getSelectedIndex();
+        int currentMonth = jcbMonths.getSelectedIndex();
         daysButtons = new JButton[42];
         JLabel[] daysLabels = new JLabel[7];
         JPanel currentMonthPanel = monthsPanels[currentMonth];
@@ -314,7 +336,7 @@ public class Reminders2 extends JFrame implements ActionListener, TableModelList
             daysButtons[i].setText(days[i]);
             if (daysButtons[i].getText() != null) {
                 int year = Integer.parseInt((String)jcbYears.getSelectedItem());
-                int month = jtpMonths.getSelectedIndex();
+                int month = jcbMonths.getSelectedIndex();
                 int day = Integer.parseInt(daysButtons[i].getText());
                 if (manager.findRemindersByDueDate(year, month, day).size() > 0) {
                     daysButtons[i].setBackground(Color.red);
@@ -324,7 +346,6 @@ public class Reminders2 extends JFrame implements ActionListener, TableModelList
             currentMonthPanel.add(daysButtons[i]);
             
         }
-        jtpMonths.repaint();
     }
     public void initCenterPanel() {
         centerPanel = new JPanel();

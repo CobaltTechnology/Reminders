@@ -81,6 +81,10 @@ public class ReminderDialog extends JDialog implements ActionListener{
         
     }
     public void actionPerformed(ActionEvent ae) {
+        if (this.isVisible()) {
+            reminder.setName(jtfName.getText());
+            reminder.setNote(jtaNote.getText());
+        }
         if (ae.getActionCommand().equals("Done") || ae.getSource().equals(jtfName)) {
             reminder.setName(jtfName.getText());
             reminder.setNote(jtaNote.getText());
